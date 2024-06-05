@@ -10,7 +10,10 @@
   "author": "Lathif Jumatiawan",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "knex": "^3.1.0",
+    "mysql2": "^3.10.0",
     "nodemon": "^3.1.3"
   }
 }
