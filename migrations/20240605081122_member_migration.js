@@ -4,7 +4,7 @@
  */
 exports.up = function (knex) {
   return knex.schema.createTable("member", function (table) {
-    table.string("code");
+    table.string("code").notNullable().primary().unique();
     table.string("name");
   });
 };

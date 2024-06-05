@@ -4,7 +4,7 @@
  */
 exports.up = function (knex) {
   return knex.schema.createTable("transaction", function (table) {
-    table.increments("transaction_id").notNullable();
+    table.increments("transaction_id").notNullable().primary().unique();
     table.string("book_id").notNullable();
     table.date("checkin_date").notNullable();
     table.date("checkout_date").nullable();

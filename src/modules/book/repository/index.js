@@ -4,6 +4,7 @@ module.exports = (knex) => {
     return knex
       .column("code", "title", "author", "stock")
       .select()
+      .where("stock", ">", 0)
       .table(table);
   };
   module.getBookByCode = (code) => {

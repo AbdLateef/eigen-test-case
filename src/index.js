@@ -17,6 +17,10 @@ const membersRepo = repository.newMembersRepository(knex);
 const membersUseCase = usecase.newMembersUseCase(membersRepo);
 http.newMembersController(app, membersUseCase);
 
+const transRepo = repository.newTransactionRepository(knex);
+const transUseCase = usecase.newTransactionUseCase(transRepo);
+http.newTransactionController(app, transUseCase);
+
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
