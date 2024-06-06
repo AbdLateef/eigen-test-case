@@ -1,12 +1,14 @@
-module.exports = (app, usecase) => {
+module.exports = (app, usecase, memberUsecase) => {
   const searchBook = async (req, res) => {
     try {
       const body = {
-        book_codes: req.body.book_codes,
+        book_code: req.body.book_code,
       };
       const availability = await usecase.checkAvailability(body);
-      const data = availability.filter((item) => item.stock > 0);
-      res.send(data);
+      res.send({
+        data: availability ?? [],
+        message: availability === undefined ? "The book not found" : "",
+      });
     } catch (error) {
       res.statusCode = 500;
       res.send(error);
@@ -27,17 +29,17 @@ module.exports = (app, usecase) => {
   const checkIn = async (req, res) => {
     try {
       const body = {
-        book_codes: req.body.book_codes,
+        book_code: req.body.book_code,
         member_code: req.body.member_code,
       };
 
       // check whether the mentioned books are avilable to be lent.
-      const checkAvailability = await usecase.checkAvailability(body);
-      const availableBooks = checkAvailability.filter((item) => item.stock > 0);
-      if (availableBooks.length === 0) {
+      const availableBook = await usecase.checkAvailability(body);
+      // const availableBooks = checkAvailability.filter((item) => item.stock > 0);
+      if (availableBook === undefined) {
         res.send({
           data: [],
-          message: "the books you have input are not available at this moment",
+          message: "the book you have input are not available at this moment",
         });
       } else {
         // check the current transaction, whether the lending has reached the maximum number.
@@ -51,38 +53,71 @@ module.exports = (app, usecase) => {
           });
         } else {
           // check whether the member is in penalty period
-          // all check passed
-          // re-build body
-          const filter = [];
-          availableBooks.forEach((item) => {
-            filter.push(item.code);
-          });
-          const filteredBookCodes = filter.filter((x) =>
-            body.book_codes.includes(x)
+          const latestPenalty = await usecase.getLatestPenalty(
+            req.body.member_code
           );
-          const newBody = {
-            book_codes: filteredBookCodes,
-            member_code: req.body.member_code,
-          };
-
-          // send data
-          const data = await usecase.checkIn(newBody);
-          res.send({
-            data: availableBooks,
-            message:
-              "The mentioned books have been lent and recorded to our database",
-          });
+          const penaltyRemaining = await usecase.getPenaltyRemaining(
+            latestPenalty.issued_date
+          );
+          if (penaltyRemaining <= 4) {
+            res.send({
+              data: [],
+              message:
+                "You are in penalty period, you are not allowed to lend until finish the period",
+            });
+          } else {
+            // all check passed
+            // send data
+            const transId = await usecase.checkIn(body);
+            const latestTrans = await usecase.getLatestTrans(transId);
+            res.send({
+              data: {
+                transaction: latestTrans,
+              },
+              message:
+                "The mentioned book has been lent and recorded to our database",
+            });
+          }
         }
       }
     } catch (error) {
+      console.log(error);
       res.statusCode = 500;
       res.send(error);
     }
   };
-  const checkout = async (res, req) => {
-    // return the book here
+  const checkOut = async (req, res) => {
+    const body = {
+      transaction_id: req.body.transaction_id,
+      member_code: req.body.member_code,
+    };
+    const data = await usecase.checkOut(body);
+    res.send({
+      data: data,
+      message: "The book has already been returned",
+    });
   };
+
+  const allMemberTrans = async (_, res) => {
+    const dataMember = await memberUsecase.getAllMembers();
+    const arrTrans = [];
+    for (const item of dataMember) {
+      const dataTrans = await usecase.checkTransInprogress(item.code);
+      arrTrans.push({
+        member_code: item.code,
+        member_name: item.name,
+        transaction: dataTrans,
+      });
+    }
+    res.send({
+      data: arrTrans,
+      message: "",
+    });
+  };
+
   app.post("/checkin", checkIn);
+  app.post("/checkout", checkOut);
   app.post("/search", searchBook);
   app.get("/current-transaction/:member_code", checkTransInprogress);
+  app.get("/transaction/all", allMemberTrans);
 };
