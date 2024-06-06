@@ -1,0 +1,226 @@
+{
+  "swagger": "2.0",
+  "layout": "StandaloneLayout",
+  "info": {
+    "description": "This is a simple library API made by express",
+    "version": "0.1.0",
+    "title": "Mini Library API documentation",
+    "contact": {
+      "email": "lathif.is10@gmail.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://spdx.org/licenses/MIT.html"
+    }
+  },
+  "host": "localhost:3001",
+  "basePath": "/",
+  "paths": {
+    "/books": {
+      "get": {
+        "tags": [
+          "Book"
+        ],
+        "summary": "Returns the list of the available books with the stock",
+        "operationId": "getBooks",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          }
+        }
+      }
+    },
+    "/search": {
+      "post": {
+        "tags": [
+          "Book"
+        ],
+        "summary": "Search a book",
+        "operationId": "checkIn",
+        "produces": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "payload",
+            "schema": {
+              "type": "object",
+              "required": [
+                "book_code"
+              ],
+              "properties": {
+                "book_code": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "404": {
+            "description": "Invalid book code or book not found"
+          }
+        }
+      }
+    },
+    "/members": {
+      "get": {
+        "tags": [
+          "Member"
+        ],
+        "summary": "Returns the list of the members",
+        "operationId": "getMembers",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          }
+        }
+      }
+    },
+    "/transaction/all": {
+      "get": {
+        "tags": [
+          "Member"
+        ],
+        "summary": "Returns the list of the members with the lent books",
+        "operationId": "getMembersTransaction",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          }
+        }
+      }
+    },
+    "/current-transaction/{member_code}": {
+      "get": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Returns the certain member in-progress transaction",
+        "operationId": "getTransactionByMember",
+        "produces": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "name": "member_code",
+            "in": "path",
+            "description": "ID of member to return",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "404": {
+            "description": "Member not found"
+          }
+        }
+      }
+    },
+    "/checkin": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Lend / borrow a book",
+        "operationId": "checkIn",
+        "produces": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "payload",
+            "schema": {
+              "type": "object",
+              "required": [
+                "book_code",
+                "member_code"
+              ],
+              "properties": {
+                "book_code": {
+                  "type": "string"
+                },
+                "member_code": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "404": {
+            "description": "Invalid member code or member is not existed"
+          }
+        }
+      }
+    },
+    "/checkout": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Return a book",
+        "operationId": "checkOut",
+        "produces": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "payload",
+            "schema": {
+              "type": "object",
+              "required": [
+                "transaction_id",
+                "member_code"
+              ],
+              "properties": {
+                "transaction_id": {
+                  "type": "string"
+                },
+                "member_code": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "404": {
+            "description": "Invalid member code or member is not existed"
+          }
+        }
+      }
+    }
+  }
+}

@@ -20,7 +20,18 @@ module.exports = (app, usecase, memberUsecase) => {
         book_codes: req.body.book_codes,
       };
       const data = await usecase.checkTransInprogress(req.params.member_code);
-      res.send(data);
+      if (data.length === 0) {
+        res.statusCode = 404;
+        res.send({
+          data: [],
+          message: "Member not found",
+        });
+      } else {
+        res.send({
+          data,
+          message: "",
+        });
+      }
     } catch (error) {
       res.statusCode = 500;
       res.send(error);
@@ -32,51 +43,63 @@ module.exports = (app, usecase, memberUsecase) => {
         book_code: req.body.book_code,
         member_code: req.body.member_code,
       };
-
-      // check whether the mentioned books are avilable to be lent.
-      const availableBook = await usecase.checkAvailability(body);
-      // const availableBooks = checkAvailability.filter((item) => item.stock > 0);
-      if (availableBook === undefined) {
+      // check whether the member exists
+      const memberExists = await memberUsecase.getMemberByCode(
+        req.body.member_code
+      );
+      if (memberExists === undefined) {
+        res.statusCode = 404;
         res.send({
           data: [],
-          message: "the book you have input are not available at this moment",
+          message: "Invalid Member Code or Member is not existed",
         });
       } else {
-        // check the current transaction, whether the lending has reached the maximum number.
-        const currentTransaction = await usecase.checkTransInprogress(
-          req.body.member_code
-        );
-        if (currentTransaction.length >= 2) {
+        // check whether the mentioned books are avilable to be lent.
+        const availableBook = await usecase.checkAvailability(body);
+        // const availableBooks = checkAvailability.filter((item) => item.stock > 0);
+        if (availableBook === undefined) {
           res.send({
-            data: currentTransaction,
-            message: "You've reached maximum number of lending",
+            data: [],
+            message: "the book you have input are not available at this moment",
           });
         } else {
-          // check whether the member is in penalty period
-          const latestPenalty = await usecase.getLatestPenalty(
+          // check the current transaction, whether the lending has reached the maximum number.
+          const currentTransaction = await usecase.checkTransInprogress(
             req.body.member_code
           );
-          const penaltyRemaining = await usecase.getPenaltyRemaining(
-            latestPenalty.issued_date
-          );
-          if (penaltyRemaining <= 4) {
+          console.log(currentTransaction);
+          if (currentTransaction.length >= 2) {
             res.send({
-              data: [],
-              message:
-                "You are in penalty period, you are not allowed to lend until finish the period",
+              data: currentTransaction,
+              message: "You've reached maximum number of lending",
             });
           } else {
-            // all check passed
-            // send data
-            const transId = await usecase.checkIn(body);
-            const latestTrans = await usecase.getLatestTrans(transId);
-            res.send({
-              data: {
-                transaction: latestTrans,
-              },
-              message:
-                "The mentioned book has been lent and recorded to our database",
-            });
+            // check whether the member is in penalty period
+            const latestPenalty = await usecase.getLatestPenalty(
+              req.body.member_code
+            );
+            const penaltyRemaining = await usecase.getPenaltyRemaining(
+              latestPenalty.issued_date
+            );
+            if (penaltyRemaining <= 4) {
+              res.send({
+                data: [],
+                message:
+                  "You are in penalty period, you are not allowed to lend until finish the period",
+              });
+            } else {
+              // all check passed
+              // send data
+              const transId = await usecase.checkIn(body);
+              const latestTrans = await usecase.getLatestTrans(transId);
+              res.send({
+                data: {
+                  transaction: latestTrans,
+                },
+                message:
+                  "The mentioned book has been lent and recorded to our database",
+              });
+            }
           }
         }
       }
