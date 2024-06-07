@@ -6,6 +6,8 @@ npm install
 ```
 ## Database Migration
 This app is using [Knex](https://knexjs.org/) as a database SQL query builder. Run the following command to migrate the database and seeder.
+Before running the command, make sure you have created the database or schema name.
+
 ```
 knex migrate:latest
 ```
