@@ -24,7 +24,7 @@ module.exports = (app, usecase, memberUsecase) => {
         res.statusCode = 404;
         res.send({
           data: [],
-          message: "Member not found",
+          message: "Transaction or member not found",
         });
       } else {
         res.send({
@@ -115,10 +115,18 @@ module.exports = (app, usecase, memberUsecase) => {
       member_code: req.body.member_code,
     };
     const data = await usecase.checkOut(body);
-    res.send({
-      data: data,
-      message: "The book has already been returned",
-    });
+    if(data.length === 0) {
+      res.statusCode = 404;
+      res.send({
+        data: data,
+        message: "The transaction ID not found",
+      });  
+    } else {
+      res.send({
+        data: data,
+        message: "The book has already been returned",
+      });
+    }
   };
 
   const allMemberTrans = async (_, res) => {
