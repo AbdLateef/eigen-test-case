@@ -19,6 +19,8 @@ Just simply running this command below:
 ```
 npm start
 ```
+It's recommended to run this App via [Postman](https://www.postman.com/) as this is the Rest API App.
+
 ## API documentation
 The swagger API documentation is running in path "/". This can be accessed by using the URL below in the browser. Make sure you run the App first.
 ```
