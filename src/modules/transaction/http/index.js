@@ -75,13 +75,17 @@ module.exports = (app, usecase, memberUsecase) => {
             });
           } else {
             // check whether the member is in penalty period
+            let penaltyRemaining;
             const latestPenalty = await usecase.getLatestPenalty(
               req.body.member_code
             );
-            const penaltyRemaining = await usecase.getPenaltyRemaining(
-              latestPenalty.issued_date
-            );
-            if (penaltyRemaining <= 4) {
+            if (latestPenalty !== undefined){
+              penaltyRemaining = await usecase.getPenaltyRemaining(
+                latestPenalty.issued_date
+              )
+            }
+
+            if (penaltyRemaining !== undefined && penaltyRemaining <= 4) {
               res.send({
                 data: [],
                 message:

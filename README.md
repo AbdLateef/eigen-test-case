@@ -9,10 +9,10 @@ This app is using [Knex](https://knexjs.org/) as a database SQL query builder. R
 Before running the command, make sure you have created the database or schema name.
 
 ```
-knex migrate:latest
+npx knex migrate:latest
 ```
 ```
-knex seed:run
+npx knex seed:run
 ```
 ## Run the App
 Just simply running this command below:
